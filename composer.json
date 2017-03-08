@@ -1,0 +1,26 @@
+{
+  "name": "fabulator/fitbit-api",
+  "description": "Fitbit API.",
+  "authors": [
+    {
+      "name": "Michal Ozogan",
+      "email": "michal@ozogan.eu",
+      "homepage": "https://www.linkedin.com/in/michal-ozog%C3%A1n-74151b35?trk=hp-identity-name",
+      "role": "Developer"
+    }
+  ],
+  "repositories": [{
+    "type": "vcs",
+    "url": "git://github.com/fabulator/fitbit-api-base.git"
+  }],
+  "require": {
+    "PHP": ">=5.5",
+    "guzzlehttp/guzzle": ">=6.0",
+    "fabulator/fitbit-api-base": "dev-master"
+  },
+  "autoload": {
+    "psr-0": {
+      "Fabulator": "lib/"
+    }
+  }
+}
