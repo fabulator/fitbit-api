@@ -1,14 +1,32 @@
 <?php
 namespace Fabulator\Fitbit;
 
+/**
+ * Class FitbitAPI
+ * @package Fabulator\Fitbit
+ */
 class FitbitAPI extends FitbitAPIBase
 {
 
+    /**
+     * FitbitAPI constructor.
+     * @param string $clientId
+     * @param string $secret
+     */
     public function __construct($clientId, $secret)
     {
         parent::__construct($clientId, $secret);
     }
 
+    /**
+     * Request new Fitbit access token.
+     *
+     * @param string $code code from Fitbit
+     * @param string $redirectUri redirect uri used to get code
+     * @param int|null $expiresIn set length of token
+     * @param string|null $state This parameter will be added to the redirect URI exactly as your application specifies.
+     * @return array response from Fitbit API
+     */
     public function requestAccessToken($code, $redirectUri, $expiresIn = null, $state = null)
     {
         $response = parent::requestAccessToken($code, $redirectUri, $expiresIn, $state);
@@ -17,18 +35,118 @@ class FitbitAPI extends FitbitAPIBase
         return $decoded;
     }
 
-    public function request($namespace, $method = 'GET', $data = [], $user = '-', $file = '.json')
+    /**
+     * Send authorized request to Fitbit API.
+     *
+     * @param string $url called url
+     * @param string $method http method
+     * @param array $data data in body
+     * @return array response from Fitbit API
+     */
+    public function request($url, $method = 'GET', $data = [])
     {
-        json_decode(parent::send($namespace, $method, $data, $user, $file)->getBody(), true);
+        return json_decode((string) parent::send($url, $method, $data)->getBody(), true);
     }
 
-    public function get($namespace, $user = '-', $file = '.json') {
+    public function getWorkout($id)
+    {
+        //return $this->request(self::FITBIT_API_URL . 'user/-/activities/' . $id . '.json');
+        return $this->request(self::FITBIT_API_URL . 'user/-/activities/list.json?beforeDate=2018-01-01&offset=0&limit=1&sort=desc');
+    }
+
+    /**
+     * @param string $namespace
+     * @param array $data
+     * @param string $file file type
+     * @return array
+     */
+    public function get($namespace, $data = [], $file = '.json')
+    {
+        return $this->request(self::FITBIT_API_URL . 'user/-/' . $namespace . $file . '?' . http_build_query($data));
+    }
+
+    /**
+     * @param \Datetime $before
+     * @param \Datetime $after
+     * @param string $sort
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     */
+    public function getWorkouts($before = null, $after = null, $sort = 'desc', $limit = 10, $offset = 0)
+    {
+        $data = [
+            'sort' => $sort,
+            'offset' => $offset,
+            'limit' => $limit
+        ];
+
+        if ($after !== null) {
+            $data['afterDate'] = $after->format('Y-m-d') . 'T' . $after->format('H:i:s');
+        }
+
+        if ($before !== null) {
+            $data['beforeDate'] = $before->format('Y-m-d') . 'T' . $before->format('H:i:s');
+        }
+
+        $response = $this->get('activities/list', $data);
+        $workouts = [];
+        foreach($response['activities'] as $activity) {
+            $workout = new Workout();
+            $workout
+                ->setSource($activity)
+                ->setDuration((int) ($activity['duration'] / 1000))
+                ->setDistance($activity['distance'])
+                ->setHeartRateLink($activity['heartRateLink'])
+                ->setAvgHeartRate($activity['averageHeartRate'])
+                ->setStartTime(new \DateTime($activity['startTime']))
+                ->setTcxLink($activity['tcxLink'])
+                ->setWorkoutId($activity['logId'])
+                ->setWorkoutTypeId($activity['activityTypeId']);
+            $workouts[] = $workout;
+        }
+        return [
+            'workouts' => $workouts,
+            'pagination' => $response['pagination'],
+        ];
+    }
+
+    /**
+     * @param \DateTime $from
+     * @param \DateTime $to
+     * @return Workout|null
+     */
+    public function getWorkoutBetweenDate(\DateTime $from, \DateTime $to)
+    {
+        $response = $this->getWorkouts($to, null, 'desc', 1);
+
+        /* @var $workout Workout */
+        $workout = $response['workouts'][0];
+
+        if ($workout->getStart() > $from) {
+            return $workout;
+        }
+
+        return null;
+    }
+
+    /*public function get($namespace, $user = '-', $file = '.json') {
         return $this->request($namespace, 'GET', [], $user, $file);
     }
 
-    public function getActivity($type, \DateTime $from, \DateTime $to, $detail = '1min')
+    public function getIntradayActivity($type, \DateTime $from, \DateTime $to, $detail = '1min')
     {
         return $this->get('activities/' . $type . '/date/' . $from->format('Y-m-d') . '/' . $to->format('Y-m-d') . '/' . $detail . '/time/' . $from->format('H:i') . '/' . $to->format('H:i'));
     }
+
+    public function getHeartActivity(\DateTime $from, \DateTime $to, $detail = '1sec')
+    {
+        return $this->getIntradayActivity('heart', $from, $to, $detail);
+    }
+
+    public function getWorkoutTCX($id)
+    {
+        return $this->get('activities/' . $id, '-', '.tcx');
+    }*/
 
 }
