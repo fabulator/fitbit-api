@@ -5,7 +5,7 @@ namespace Fabulator\Fitbit;
  * Class FitbitAPI
  * @package Fabulator\Fitbit
  */
-class FitbitAPI extends FitbitAPIBase
+class FitbitApi extends FitbitApiBase
 {
 
     /**
@@ -46,12 +46,6 @@ class FitbitAPI extends FitbitAPIBase
     public function request($url, $method = 'GET', $data = [])
     {
         return json_decode((string) parent::send($url, $method, $data)->getBody(), true);
-    }
-
-    public function getWorkout($id)
-    {
-        //return $this->request(self::FITBIT_API_URL . 'user/-/activities/' . $id . '.json');
-        return $this->request(self::FITBIT_API_URL . 'user/-/activities/list.json?beforeDate=2018-01-01&offset=0&limit=1&sort=desc');
     }
 
     /**
@@ -129,24 +123,5 @@ class FitbitAPI extends FitbitAPIBase
 
         return null;
     }
-
-    /*public function get($namespace, $user = '-', $file = '.json') {
-        return $this->request($namespace, 'GET', [], $user, $file);
-    }
-
-    public function getIntradayActivity($type, \DateTime $from, \DateTime $to, $detail = '1min')
-    {
-        return $this->get('activities/' . $type . '/date/' . $from->format('Y-m-d') . '/' . $to->format('Y-m-d') . '/' . $detail . '/time/' . $from->format('H:i') . '/' . $to->format('H:i'));
-    }
-
-    public function getHeartActivity(\DateTime $from, \DateTime $to, $detail = '1sec')
-    {
-        return $this->getIntradayActivity('heart', $from, $to, $detail);
-    }
-
-    public function getWorkoutTCX($id)
-    {
-        return $this->get('activities/' . $id, '-', '.tcx');
-    }*/
 
 }
