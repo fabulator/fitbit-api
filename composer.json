@@ -9,14 +9,9 @@
       "role": "Developer"
     }
   ],
-  "repositories": [{
-    "type": "vcs",
-    "url": "git://github.com/fabulator/fitbit-api-base.git"
-  }],
   "require": {
     "PHP": ">=5.5",
-    "guzzlehttp/guzzle": ">=6.0",
-    "fabulator/fitbit-api-base": "dev-master"
+    "fabulator/fitbit-api-base": "1.x"
   },
   "autoload": {
     "psr-0": {
