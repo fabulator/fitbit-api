@@ -11,7 +11,7 @@
   ],
   "require": {
     "PHP": ">=5.5",
-    "fabulator/fitbit-api-base": "1.x"
+    "fabulator/fitbit-api-base": "0.x"
   },
   "autoload": {
     "psr-0": {

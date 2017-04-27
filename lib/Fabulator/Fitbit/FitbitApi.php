@@ -36,16 +36,34 @@ class FitbitApi extends FitbitApiBase
     }
 
     /**
+     * Refresh Fitbit token.
+     *
+     * @param string $refreshToken refresh token
+     * @param int|null $expiresIn set length of token
+     * @return array response from Fitbit API
+     */
+    public function refreshAccessToken($refreshToken, $expiresIn = null) {
+        $response = parent::refreshAccessToken($refreshToken, $expiresIn);
+        $decoded = json_decode($response->getBody(), true);
+        $this->setToken($decoded['access_token']);
+        return $decoded;
+    }
+
+    /**
      * Send authorized request to Fitbit API.
      *
      * @param string $url called url
      * @param string $method http method
      * @param array $data data in body
-     * @return array response from Fitbit API
+     * @return array|string response from Fitbit API
      */
     public function request($url, $method = 'GET', $data = [])
     {
-        return json_decode((string) parent::send($url, $method, $data)->getBody(), true);
+        $response = parent::send($url, $method, $data);
+        if ($response->getHeaders()['Content-Type'][0] === 'application/json;charset=UTF-8') {
+            return json_decode((string) $response->getBody(), true);
+        }
+        return (string) $response->getBody();
     }
 
     /**
@@ -56,7 +74,17 @@ class FitbitApi extends FitbitApiBase
      */
     public function get($namespace, $data = [], $file = '.json')
     {
-        return $this->request(self::FITBIT_API_URL . 'user/-/' . $namespace . $file . '?' . http_build_query($data));
+        return $this->request(self::FITBIT_API_URL . '1/user/-/' . $namespace . $file . '?' . http_build_query($data));
+    }
+
+    /**
+     * @param $namespace
+     * @param array $data
+     * @return array response from Fitbit
+     */
+    public function post($namespace, $data = [])
+    {
+        return $this->request(self::FITBIT_API_URL . '1/user/-/' . $namespace . '.json', 'POST', $data);
     }
 
     /**
@@ -90,13 +118,26 @@ class FitbitApi extends FitbitApiBase
             $workout
                 ->setSource($activity)
                 ->setDuration((int) ($activity['duration'] / 1000))
-                ->setDistance($activity['distance'])
-                ->setHeartRateLink($activity['heartRateLink'])
-                ->setAvgHeartRate($activity['averageHeartRate'])
                 ->setStartTime(new \DateTime($activity['startTime']))
-                ->setTcxLink($activity['tcxLink'])
                 ->setWorkoutId($activity['logId'])
                 ->setWorkoutTypeId($activity['activityTypeId']);
+
+            if (isset($activity['distance'])) {
+                $workout->setDistance($activity['distance']);
+            }
+
+            if (isset($activity['heartRateLink'])) {
+                $workout->setHeartRateLink($activity['heartRateLink']);
+            }
+
+            if (isset($activity['averageHeartRate'])) {
+                $workout->setAvgHeartRate($activity['averageHeartRate']);
+            }
+
+            if (isset($activity['tcxLink'])) {
+                $workout->setTcxLink($activity['tcxLink']);
+            }
+
             $workouts[] = $workout;
         }
         return [
@@ -122,6 +163,55 @@ class FitbitApi extends FitbitApiBase
         }
 
         return null;
+    }
+
+    public function addWorkout(\DateTime $date, $activityTypeId, $durationInSec, $distance = null, $calories = null, $distanceUnit = null)
+    {
+        $data = [
+            'date' => $date->format('Y-m-d'),
+            'startTime' => $date->format('H:i'),
+            'activityId' => $activityTypeId,
+            'durationMillis' => $durationInSec * 1000
+        ];
+
+        if ($calories !== null) {
+            $data['manualCalories'] = (int) $calories;
+        }
+
+        if ($distance !== null) {
+            $data['distance'] = $distance;
+        }
+
+        if ($distanceUnit !== null) {
+            $data['distanceUnit'] = $distanceUnit;
+        }
+
+        return $this->post('activities', $data);
+    }
+
+    /**
+     * @param $type
+     * @param \DateTime $from
+     * @param \DateTime $to
+     * @param string $detail
+     * @return array
+     */
+    public function getIntradayActivity($type, \DateTime $from, \DateTime $to, $detail = '1min')
+    {
+        return $this->get('activities/' . $type . '/date/' . $from->format('Y-m-d') . '/' . $to->format('Y-m-d') . '/' . $detail . '/time/' . $from->format('H:i') . '/' . $to->format('H:i'));
+    }
+
+    /**
+     * @param \DateTime $from
+     * @param \DateTime $to
+     * @param string $detail
+     * @return array
+     */
+    public function getHeartActivity(\DateTime $from, \DateTime $to, $detail = '1sec')
+    {
+        print_r($from);
+        print_r($to);
+        return $this->getIntradayActivity('heart', $from, $to, $detail);
     }
 
 }

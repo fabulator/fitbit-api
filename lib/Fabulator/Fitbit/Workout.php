@@ -13,6 +13,11 @@ class Workout {
     private $workoutTypeId;
 
     /**
+     * @var string
+     */
+    private $workoutTypeName;
+
+    /**
      * @var float
      */
     private $distance;
@@ -73,6 +78,24 @@ class Workout {
     public function getWorkoutTypeId()
     {
         return $this->workoutTypeId;
+    }
+
+    /**
+     * @param $name string
+     * @return $this
+     */
+    public function setWorkoutTypeName($name)
+    {
+        $this->workoutTypeName = $name;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getWorkoutTypeName()
+    {
+        return $this->workoutTypeName;
     }
 
     /**
@@ -153,7 +176,7 @@ class Workout {
      */
     public function setStartTime(\DateTime $start)
     {
-        $this->start = $start;
+        $this->start = clone $start;
         return $this;
     }
 
@@ -162,7 +185,12 @@ class Workout {
      */
     public function getStart()
     {
-        return $this->start;
+        return clone $this->start;
+    }
+
+    public function getEnd()
+    {
+        return (clone) $this->getStart()->add(new \DateInterval('PT'. ($this->getDuration()) .'S'));
     }
 
     /**
@@ -217,6 +245,14 @@ class Workout {
     public function getAvgHeartRate()
     {
         return $this->avgHeartRate;
+    }
+
+    /**
+     * @return string
+     */
+    public function toString()
+    {
+        return 'Workout "' . $this->getWorkoutTypeName() . '" was ' . round($this->getDuration() / 60) . 'min long.' . ($this->getDistance() ? (' Distance ' . $this->getDistance() . 'km was achived.') : '') . ' It started at ' . $this->getStart()->format('d.m.Y H:i:s e') . '.';
     }
 
 }
