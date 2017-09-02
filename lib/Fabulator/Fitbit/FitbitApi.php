@@ -158,6 +158,10 @@ class FitbitApi extends FitbitApiBase
         /* @var $workout Workout */
         $workout = $response['workouts'][0];
 
+        if (!$workout) {
+            return null;
+        }
+
         if ($workout->getStart() > $from) {
             return $workout;
         }
@@ -209,8 +213,6 @@ class FitbitApi extends FitbitApiBase
      */
     public function getHeartActivity(\DateTime $from, \DateTime $to, $detail = '1sec')
     {
-        print_r($from);
-        print_r($to);
         return $this->getIntradayActivity('heart', $from, $to, $detail);
     }
 

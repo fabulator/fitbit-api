@@ -188,9 +188,14 @@ class Workout {
         return clone $this->start;
     }
 
+    /**
+     * Get end of workout.
+     *
+     * @return \DateTime
+     */
     public function getEnd()
     {
-        return (clone) $this->getStart()->add(new \DateInterval('PT'. ($this->getDuration()) .'S'));
+        return $this->getStart()->add(new \DateInterval('PT'. ($this->getDuration()) .'S'));
     }
 
     /**
