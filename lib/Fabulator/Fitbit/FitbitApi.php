@@ -15,6 +15,7 @@ class FitbitApi extends FitbitApiBase
 {
     use IntradayApi;
     use SleepApi;
+    use TimeSerieApi;
 
     const DATE_FORMAT = 'Y-m-d';
     const TIME_FORMAT = 'H:i';
