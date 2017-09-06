@@ -18,12 +18,12 @@ class Workout {
     private $workoutTypeName;
 
     /**
-     * @var float
+     * @var ?float
      */
     private $distance;
 
     /**
-     * @var integer
+     * @var \DateInterval
      */
     private $duration;
 
@@ -109,7 +109,7 @@ class Workout {
     }
 
     /**
-     * @return float
+     * @return ?float
      */
     public function getDistance()
     {
@@ -117,17 +117,17 @@ class Workout {
     }
 
     /**
-     * @param $duration integer
+     * @param $duration \DateInterval
      * @return $this
      */
-    public function setDuration($duration)
+    public function setDuration(\DateInterval $duration)
     {
         $this->duration = $duration;
         return $this;
     }
 
     /**
-     * @return int
+     * @return \DateInterval
      */
     public function getDuration()
     {
@@ -156,7 +156,7 @@ class Workout {
      * @param $id string
      * @return $this
      */
-    public function setWorkoutId($id)
+    public function setId($id)
     {
         $this->workoutId = $id;
         return $this;
@@ -165,7 +165,7 @@ class Workout {
     /**
      * @return string
      */
-    public function getWorkoutId()
+    public function getId()
     {
         return $this->workoutId;
     }
@@ -195,7 +195,7 @@ class Workout {
      */
     public function getEnd()
     {
-        return $this->getStart()->add(new \DateInterval('PT'. ($this->getDuration()) .'S'));
+        return clone $this->getStart()->add($this->getDuration());
     }
 
     /**
