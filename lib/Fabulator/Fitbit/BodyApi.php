@@ -10,7 +10,7 @@ trait BodyApi {
         foreach($response['weight'] as $item) {
             $toRespond[] = [
                 'bmi' => $item['bmi'],
-                'fat' => $item['fat'],
+                'fat' => isset($item['fat']) ? $item['fat'] : null,
                 'weight' => $item['weight'],
                 'datetime' => new \DateTime($item['date'] . ' ' . $item['time']),
                 'source' => $item,
