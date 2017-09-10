@@ -17,6 +17,7 @@ class FitbitApi extends FitbitApiBase
     use SleepApi;
     use TimeSerieApi;
     use WorkoutApi;
+    use BodyApi;
 
     const DATE_FORMAT = 'Y-m-d';
     const TIME_FORMAT = 'H:i';
