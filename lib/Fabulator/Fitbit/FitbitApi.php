@@ -142,7 +142,7 @@ class FitbitApi extends FitbitApiBase
         } catch (ClientException $e) {
             $this->setLimits($e->getResponse());
             $response = json_decode((string) $e->getResponse()->getBody(), true);
-            if ($response['errors'][0]['message'] === 'Too Many Requests') {
+            if ((int) $e->getCode() === 429 || $response['errors'][0]['message'] === 'Too Many Requests') {
                 throw new TooManyRequests('Too many requests. Limit will reset in ' . $this->getRequestLimitResetIn()->format('c') . '.', $e->getCode(), $e, $this->getRequestLimitResetIn());
             }
 
