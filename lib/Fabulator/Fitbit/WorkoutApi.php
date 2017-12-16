@@ -68,7 +68,7 @@ trait WorkoutApi {
      */
     public function getWorkoutBetweenDate(\DateTime $from, \DateTime $to)
     {
-        $response = $this->getWorkouts($to, null, 'desc', 1);
+        $response = $this->getWorkouts($to, null, 1);
 
         /* @var $workout Workout */
         $workout = $response['workouts'][0];
