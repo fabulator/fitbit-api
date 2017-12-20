@@ -16,7 +16,6 @@ trait IntradayApi {
             $to = clone $from;
             $to->setTime(23, 59, 59);
         }
-
         // fetch intraday data from Fitbit
         $response = $this->get('activities/' . $type . '/date/' . $from->format(self::DATE_FORMAT) . '/' . $to->format(self::DATE_FORMAT) . '/' . $detail . '/time/' . $from->format(self::TIME_FORMAT) . '/' . $to->format(self::TIME_FORMAT));
 

@@ -2,6 +2,32 @@
 namespace Fabulator\Fitbit;
 
 trait WorkoutApi {
+    private function getWorkoutFromActivity($activity) {
+        $workout = new Workout();
+        $workout
+            ->setSource($activity)
+            ->setDuration(new \DateInterval('PT'. ($activity['duration'] / 1000) .'S'))
+            ->setStartTime(new \DateTime($activity['startTime']))
+            ->setId($activity['logId'])
+            ->setWorkoutTypeId($activity['activityTypeId']);
+
+        if (isset($activity['distance'])) {
+            $workout->setDistance($activity['distance']);
+        }
+
+        if (isset($activity['heartRateLink'])) {
+            $workout->setHeartRateLink($activity['heartRateLink']);
+        }
+
+        if (isset($activity['averageHeartRate'])) {
+            $workout->setAvgHeartRate($activity['averageHeartRate']);
+        }
+
+        if (isset($activity['tcxLink'])) {
+            $workout->setTcxLink($activity['tcxLink']);
+        }
+        return $workout;
+    }
     /**
      * @param \Datetime $before
      * @param \Datetime $after
@@ -29,36 +55,31 @@ trait WorkoutApi {
         $response = $this->get('activities/list', $data);
         $workouts = [];
         foreach($response['activities'] as $activity) {
-            $workout = new Workout();
-            $workout
-                ->setSource($activity)
-                ->setDuration(new \DateInterval('PT'. ($activity['duration'] / 1000) .'S'))
-                ->setStartTime(new \DateTime($activity['startTime']))
-                ->setId($activity['logId'])
-                ->setWorkoutTypeId($activity['activityTypeId']);
-
-            if (isset($activity['distance'])) {
-                $workout->setDistance($activity['distance']);
-            }
-
-            if (isset($activity['heartRateLink'])) {
-                $workout->setHeartRateLink($activity['heartRateLink']);
-            }
-
-            if (isset($activity['averageHeartRate'])) {
-                $workout->setAvgHeartRate($activity['averageHeartRate']);
-            }
-
-            if (isset($activity['tcxLink'])) {
-                $workout->setTcxLink($activity['tcxLink']);
-            }
-
-            $workouts[] = $workout;
+            $workouts[] = $this->getWorkoutFromActivity($activity);
         }
         return [
             'workouts' => $workouts,
             'pagination' => $response['pagination'],
         ];
+    }
+
+    public function getWorkout(\DateTime $day, $id)
+    {
+        $data = [
+            'offset' => 0,
+            'limit' => 100,
+            'day' => $day->format(self::DATE_FORMAT),
+        ];
+
+        $response = $this->get('activities/list', $data);
+
+        foreach($response['activities'] as $activity) {
+            if ($activity['logId'] == $id) {
+                return $this->getWorkoutFromActivity($activity);
+            }
+        }
+
+        return null;
     }
 
     /**
